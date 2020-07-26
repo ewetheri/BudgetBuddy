@@ -9,33 +9,42 @@ public class ContextManager {
     private final static ContextManager instance = new ContextManager();
 
     private Timer contextTimer;
-    private Set<String> activeContexts;
+    private Map<String, String> activeContexts;
 
     private ContextManager() {
         contextTimer = new Timer("Contexts");
-        activeContexts = new HashSet<>();
+        activeContexts = new HashMap<>();
     }
 
     public static ContextManager getInstance() {
         return instance;
     }
 
-    public String getNewContext() {
+    public String getNewContext(String username) {
         String contextId = UUID.randomUUID().toString();
-        activeContexts.add(contextId);
+        activeContexts.put(username, contextId);
 
         contextTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                activeContexts.remove(contextId);
+                activeContexts.remove(username);
             }
         }, BudgetBuddyConfig.getInstance().getContextTimeoutMilliseconds());
 
         return contextId;
+
+        //TODO: currently, this put will replace an old context with a new one--but it won't remove the scheduled
+        // event to remove the context by that username. If someone logs in twice in quick succession, there's
+        // potential for their context to expire early.
+        // Needs to be tweaked, w/ the scheduled event removed on a rewrite of a username's context.
     }
 
-    private boolean check(String contextId) {
-        return activeContexts.contains(contextId);
+    public boolean checkContext(String contextId) {
+        return activeContexts.containsValue(contextId);
+    }
+
+    public boolean checkUsername(String username) {
+        return activeContexts.containsKey(username);
     }
 
 }

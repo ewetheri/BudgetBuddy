@@ -1,4 +1,4 @@
-package com.wetherill.budgetbuddy.backend;
+package com.wetherill.budgetbuddy.core;
 
 import java.text.DecimalFormat;
 import java.util.Objects;
